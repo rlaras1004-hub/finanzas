@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Finanzas">
+<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Finanzas</title>
+<style>
+:root{color-scheme:light dark;--bg:#f4f5f7;--card:#fff;--fg:#17181a;--mut:#6b6f76;--bd:#e2e4e8;--ok:#0a7d32;--bad:#c0262d;--acc:#2457c5;--hi:#eaf0ff}
+@media (prefers-color-scheme:dark){:root{--bg:#111214;--card:#1c1d20;--fg:#ececec;--mut:#9a9da3;--bd:#2e3035;--ok:#45c46f;--bad:#ff6b6b;--acc:#6f9bff;--hi:#1f2740}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.35 -apple-system,system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(env(safe-area-inset-top) + 8px) 16px 8px;border-bottom:1px solid var(--bd);font-weight:700;font-size:18px}
+main{padding:12px 16px calc(84px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;color:var(--mut);font:600 12px -apple-system,system-ui;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button i{font-style:normal;font-size:20px}
+nav button.on{color:var(--acc)}
+section{display:none}section.on{display:block}
+h2{font-size:15px;margin:18px 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.kpi span{display:block;color:var(--mut);font-size:12px}
+.kpi b{display:block;font-size:20px;margin-top:2px}
+.kpi small{color:var(--mut);font-size:11px}
+.kpi.big{grid-column:1/-1}
+.kpi.big b{font-size:28px}
+.bar{height:8px;background:var(--bd);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar div{height:100%;background:var(--acc)}
+.pos{color:var(--ok)}.neg{color:var(--bad)}.mut{color:var(--mut)}
+.row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:15px}
+.row:last-child{border-bottom:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.full{grid-column:1/-1}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+input,select{font:16px -apple-system,system-ui;width:100%;min-width:0;padding:9px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);-webkit-appearance:none;appearance:none}
+input[type=date]{min-height:40px}
+input[type=checkbox]{width:22px;height:22px;-webkit-appearance:checkbox;appearance:auto}
+button.b{font:600 15px -apple-system,system-ui;padding:11px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--acc);width:100%;margin-top:6px}
+button.b.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.b.danger{color:var(--bad)}
+button.x{border:0;background:none;color:var(--bad);font-size:14px;padding:4px 0}
+.wk.cur{border-color:var(--acc);background:var(--hi)}
+.wk.past{opacity:.75}
+.wk .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.wk .top b{font-size:16px}
+.wk .lines{font-size:13px;color:var(--mut);margin-bottom:8px}
+.wk .lines div{display:flex;justify-content:space-between}
+.wk .inp{display:flex;align-items:center;gap:8px}
+.wk .inp label{margin:0;white-space:nowrap;font-size:14px;color:var(--fg)}
+.tag{font-size:11px;padding:1px 6px;border-radius:6px;background:var(--acc);color:#fff;margin-left:6px;vertical-align:middle}
+.help{color:var(--mut);font-size:13px;margin:0 0 10px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--mut);font-size:11px}
+.sub{display:flex;gap:6px;margin-bottom:10px}
+.sub button{flex:1;font:600 14px -apple-system,system-ui;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+.sub button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+</style>
+</head>
+<body>
+<header id="hdr">Finanzas</header>
+<main>
+
+<section id="t-res">
+  <div class="kpis" id="kpis"></div>
+  <h2>Saldo proyectado</h2>
+  <div class="card" id="chart"></div>
+  <h2>Próximos 30 días</h2>
+  <div class="card" id="prox"></div>
+</section>
+
+<section id="t-sem">
+  <p class="help">Al cerrar cada semana anota cuánto gastaste de verdad. Si lo dejas vacío se usa tu presupuesto semanal. Lo que no gastes se suma al ahorro.</p>
+  <div id="weeks"></div>
+</section>
+
+<section id="t-fij">
+  <p class="help">Gastos recurrentes: internet, luz (bimestral), teléfono, suscripciones, renta… Pon la fecha del próximo pago y la frecuencia.</p>
+  <div id="ed-fijos"></div>
+</section>
+
+<section id="t-deu">
+  <h2>Deudas a plazos</h2>
+  <p class="help">Pago por periodo + pagos restantes. Los pagos se descuentan solos conforme pasan las fechas.</p>
+  <div id="ed-plazos"></div>
+  <h2>Deudas fijas</h2>
+  <p class="help">Montos a pagar de una vez. Con fecha entran en la proyección; sin fecha solo cuentan como deuda pendiente.</p>
+  <div id="ed-fijas"></div>
+  <div class="card" id="deu-tot"></div>
+</section>
+
+<section id="t-mas">
+  <div class="sub">
+    <button data-sub="aj" class="on">Ajustes</button>
+    <button data-sub="ex">Extras</button>
+    <button data-sub="bk">Respaldo</button>
+  </div>
+  <div id="s-aj">
+    <div class="card grid2" id="ajustes"></div>
+  </div>
+  <div id="s-ex" hidden>
+    <p class="help">Ingresos o gastos únicos: aguinaldo, bonos, regalos, viajes, compras grandes.</p>
+    <div id="ed-extras"></div>
+  </div>
+  <div id="s-bk" hidden>
+    <p class="help">Tus datos viven solo en este teléfono. Exporta un respaldo de vez en cuando (se guarda en Archivos) y úsalo para restaurar o pasar a otro dispositivo.</p>
+    <button class="b pri" id="btn-exp">Exportar respaldo (.json)</button>
+    <button class="b" id="btn-imp">Importar respaldo</button>
+    <input type="file" id="file-imp" accept="application/json,.json" hidden>
+    <button class="b" id="btn-csv">Exportar proyección (.csv)</button>
+    <button class="b danger" id="btn-rst">Borrar todo y empezar de cero</button>
+  </div>
+</section>
+
+</main>
+<nav id="nav">
+  <button data-tab="res" class="on"><i>◎</i>Resumen</button>
+  <button data-tab="sem"><i>▦</i>Semanas</button>
+  <button data-tab="fij"><i>↻</i>Fijos</button>
+  <button data-tab="deu"><i>▤</i>Deudas</button>
+  <button data-tab="mas"><i>⋯</i>Más</button>
+</nav>
+
+<script>
+'use strict';
+const KEY='finanzas_semanales_v1', DAY=864e5;
+const pad=n=>String(n).padStart(2,'0');
+const isoT=t=>new Date(t).toISOString().slice(0,10);
+const parse=s=>{const[y,m,d]=s.split('-').map(Number);return Date.UTC(y,m-1,d)};
+const hoy=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const addDays=(s,n)=>isoT(parse(s)+n*DAY);
+function addMonths(s,n){const[y,m,d]=s.split('-').map(Number);const last=new Date(Date.UTC(y,m+n,0)).getUTCDate();return isoT(Date.UTC(y,m-1+n,Math.min(d,last)))}
+const isDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s);
+const maxD=(a,b)=>a>b?a:b, minD=(a,b)=>a<b?a:b;
+const FREQ={d7:['d',7,'Semanal'],d14:['d',14,'Catorcenal'],m1:['m',1,'Mensual'],m2:['m',2,'Bimestral'],m3:['m',3,'Trimestral'],m6:['m',6,'Semestral'],m12:['m',12,'Anual']};
+const PER_MES={d7:52/12,d14:26/12,m1:1,m2:1/2,m3:1/3,m6:1/6,m12:1/12};
+const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const fmtM=new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0});
+const M=v=>fmtM.format(Math.round(v)||0);
+const fmtD=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'short',timeZone:'UTC'});
+const fmtDY=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+const D=s=>fmtD.format(parse(s)).replace('.','');
+const DY=s=>fmtDY.format(parse(s)).replace('.','');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+function def(){
+  return {
+    saldo:{monto:0,fecha:hoy()},
+    ingreso:{monto:0,proxima:hoy(),freq:'d14'},
+    presupuestoSemanal:0,
+    inicioSemana:1,
+    meta:{monto:0,fecha:addMonths(hoy(),3)},
+    horizonte:addMonths(hoy(),12),
+    fijos:[],plazos:[],fijas:[],extras:[],
+    semanas:{}
+  };
+}
+function merge(o){
+  const d=def(); if(!o||typeof o!=='object') return d;
+  for(const k of Object.keys(d)){
+    if(!(k in o)) continue;
+    if(Array.isArray(d[k])) d[k]=Array.isArray(o[k])?o[k]:d[k];
+    else if(d[k]&&typeof d[k]==='object') d[k]=Object.assign(d[k],o[k]||{});
+    else d[k]=o[k];
+  }
+  return d;
+}
+let S;
+try{S=merge(JSON.parse(localStorage.getItem(KEY)))}catch(e){S=def()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert('No se pudo guardar en este navegador. Exporta un respaldo.')}}
+
+/* ---------- motor de cálculo ---------- */
+// fechas f con from < f <= to, de una serie que arranca en start (máx 'max' ocurrencias)
+function occ(start,freq,max,from,to){
+  const out=[]; if(!isDate(start)) return out;
+  const [u,n]=FREQ[freq]||FREQ.m1; const lim=Math.min(max??5000,5000);
+  for(let k=0;k<lim;k++){
+    const f=u==='d'?addDays(start,k*n):addMonths(start,k*n);
+    if(f>to) break;
+    if(f>from) out.push(f);
+  }
+  return out;
+}
+function eventos(from,to){
+  const ev=[], I=S.ingreso;
+  if(num(I.monto)) occ(I.proxima,I.freq||'d14',null,from,to).forEach(f=>ev.push({f,t:'ing',c:'Sueldo',m:num(I.monto)}));
+  S.fijos.forEach(x=>{if(num(x.monto)) occ(x.proxima,x.freq,null,from,to).forEach(f=>ev.push({f,t:'fij',c:x.nombre||'Gasto fijo',m:-num(x.monto)}))});
+  S.plazos.forEach(x=>{if(num(x.pago)&&num(x.pagos)>0) occ(x.proxima,x.freq,Math.floor(num(x.pagos)),from,to).forEach(f=>ev.push({f,t:'deu',c:x.nombre||'Deuda',m:-num(x.pago)}))});
+  S.fijas.forEach(x=>{if(!x.pagada&&num(x.monto)&&isDate(x.fecha)&&x.fecha>from&&x.fecha<=to) ev.push({f:x.fecha,t:'deu',c:x.nombre||'Deuda',m:-num(x.monto)})});
+  S.extras.forEach(x=>{if(num(x.monto)&&isDate(x.fecha)&&x.fecha>from&&x.fecha<=to) ev.push({f:x.fecha,t:'ext',c:x.concepto||'Extra',m:(x.tipo==='gasto'?-1:1)*Math.abs(num(x.monto))})});
+  return ev.sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0);
+}
+function weekStart(s){const t=parse(s);const dow=new Date(t).getUTCDay();return isoT(t-((dow-num(S.inicioSemana)+7)%7)*DAY)}
+// Proyección semanal desde el saldo base (al cierre de su fecha) hasta 'end'
+function proj(end){
+  const a=S.saldo.fecha; let bal=num(S.saldo.monto); const rows=[];
+  if(!isDate(a)||!isDate(end)||end<=a) return {rows,bal};
+  const ev=eventos(a,end); let ei=0;
+  const pres=num(S.presupuestoSemanal);
+  for(let w=weekStart(a); w<=end; w=addDays(w,7)){
+    const we=addDays(w,6), lo=maxD(a,addDays(w,-1)), hi=minD(we,end);
+    const dias=Math.round((parse(hi)-parse(lo))/DAY);
+    if(dias<=0) continue;
+    const real=S.semanas[w], hasReal=real!=null&&real!=='';
+    const gasto=(hasReal?num(real):pres)*dias/7;
+    const r={w,we,hi,dias,hasReal,gasto,ing:0,fij:0,deu:0,ext:0,ev:[]};
+    while(ei<ev.length&&ev[ei].f<=hi){const e=ev[ei++]; if(e.f>lo){r[e.t]+=e.m;r.ev.push(e)}}
+    r.neto=r.ing+r.fij+r.deu+r.ext-gasto; bal+=r.neto; r.bal=bal; rows.push(r);
+  }
+  return {rows,bal};
+}
+function deudaDespues(d){
+  let t=0;
+  S.plazos.forEach(x=>{if(num(x.pago)&&num(x.pagos)>0) t+=occ(x.proxima,x.freq,Math.floor(num(x.pagos)),d,'9999-12-31').length*num(x.pago)});
+  S.fijas.forEach(x=>{if(!x.pagada&&num(x.monto)&&(!isDate(x.fecha)||x.fecha>d)) t+=num(x.monto)});
+  return t;
+}
+const saldoAl=d=>d<=S.saldo.fecha?num(S.saldo.monto):proj(d).bal;
+
+/* ---------- render ---------- */
+const $=id=>document.getElementById(id);
+function kpi(lbl,val,cls='',small='',extra=''){return `<div class="kpi ${extra}"><span>${lbl}</span><b class="${cls}">${val}</b>${small?`<small>${small}</small>`:''}</div>`}
+
+function renderResumen(){
+  const h=hoy(), meta=S.meta.fecha, goal=num(S.meta.monto), pres=num(S.presupuestoSemanal);
+  const est=saldoAl(h), balMeta=saldoAl(meta);
+  const falta=goal-balMeta, pct=goal>0?Math.max(0,Math.min(100,est/goal*100)):0;
+  const desde=maxD(h,S.saldo.fecha), semRest=(parse(meta)-parse(desde))/DAY/7;
+  const deudaHoy=deudaDespues(h), deudaMeta=deudaDespues(meta);
+  let maxSem='—', maxCls='';
+  if(semRest>0){const v=pres+(balMeta-goal)/semRest; maxSem=v<0?'No alcanza':M(v); maxCls=v<pres?'neg':'pos'}
+  let ahorroExtra=0,n=0; for(const w in S.semanas){const v=S.semanas[w]; if(v!==''&&v!=null){ahorroExtra+=pres-num(v);n++}}
+  const fijMes=S.fijos.reduce((s,x)=>s+num(x.monto)*(PER_MES[x.freq]||1),0);
+  const ingMes=num(S.ingreso.monto)*(PER_MES[S.ingreso.freq]||1);
+  $('kpis').innerHTML=
+    kpi(`Saldo proyectado al ${DY(meta)}`,M(balMeta),balMeta>=goal?'pos':'neg',
+      falta>0?`Te faltarían ${M(falta)} para la meta de ${M(goal)}`:`Superas la meta de ${M(goal)} por ${M(-falta)}`,'big')+
+    `<div class="kpi big"><span>Avance hoy hacia la meta</span><b>${M(est)} <small>(${pct.toFixed(0)}%)</small></b><div class="bar"><div style="width:${pct}%"></div></div><small>Saldo estimado hoy, con base en ${M(num(S.saldo.monto))} al ${DY(S.saldo.fecha)}</small></div>`+
+    kpi('Gasto semanal máx. para llegar',maxSem,maxCls,`Tu presupuesto: ${M(pres)}`)+
+    kpi('Juntarás de hoy a la meta',M(balMeta-est),balMeta-est>=0?'pos':'neg',`${semRest>0?semRest.toFixed(1):0} semanas`)+
+    kpi('Deuda pendiente hoy',M(deudaHoy),deudaHoy?'neg':'')+
+    kpi('Saldo meta − deuda restante',M(balMeta-deudaMeta),balMeta-deudaMeta>=0?'':'neg',`Deuda tras ${D(meta)}: ${M(deudaMeta)}`)+
+    kpi('Ingreso mensual prom.',M(ingMes))+
+    kpi('Fijos mensuales prom.',M(fijMes),'',`Libre/mes aprox: ${M(ingMes-fijMes-pres*52/12)}`)+
+    (n?kpi('Ahorro extra por gastar menos',M(ahorroExtra),ahorroExtra>=0?'pos':'neg',`${n} semana(s) registradas`,'big'):'');
+  const p=proj(maxD(S.horizonte,meta));
+  $('chart').innerHTML=chart(p.rows);
+  const ev=eventos(h,addDays(h,30));
+  $('prox').innerHTML=ev.length?ev.map(e=>`<div class="row"><span><span class="mut">${D(e.f)}</span> · ${esc(e.c)}</span><b class="${e.m>=0?'pos':'neg'}">${e.m>=0?'+':''}${M(e.m)}</b></div>`).join(''):'<span class="mut">Sin movimientos programados</span>';
+}
+
+function chart(rows){
+  if(!rows.length) return '<span class="mut">Configura tu saldo y fechas para ver la proyección.</span>';
+  const W=360,H=200,L=44,R=8,T=10,B=22, goal=num(S.meta.monto);
+  const vals=rows.map(r=>r.bal), mn=Math.min(0,...vals), mx=Math.max(goal,...vals)*1.08||1;
+  const x=i=>L+(W-L-R)*i/Math.max(1,rows.length-1), y=v=>T+(H-T-B)*(1-(v-mn)/(mx-mn));
+  const pts=rows.map((r,i)=>`${x(i).toFixed(1)},${y(r.bal).toFixed(1)}`).join(' ');
+  const mi=rows.findIndex(r=>r.hi>=S.meta.fecha), ci=rows.findIndex(r=>r.hi>=hoy());
+  const k=v=>v>=1000||v<=-1000?Math.round(v/1000)+'k':Math.round(v);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Saldo proyectado por semana">`;
+  [mn,0,goal,mx].filter((v,i,a)=>a.indexOf(v)===i).forEach(v=>{s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--bd)"/><text x="${L-4}" y="${y(v)+4}" text-anchor="end">${k(v)}</text>`});
+  s+=`<line x1="${L}" x2="${W-R}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ok)" stroke-dasharray="4 3"/>`;
+  if(mi>=0) s+=`<line x1="${x(mi)}" x2="${x(mi)}" y1="${T}" y2="${H-B}" stroke="var(--ok)" stroke-dasharray="2 3"/><circle cx="${x(mi)}" cy="${y(rows[mi].bal)}" r="4" fill="var(--ok)"/>`;
+  if(ci>=0) s+=`<circle cx="${x(ci)}" cy="${y(rows[ci].bal)}" r="4" fill="var(--acc)"/>`;
+  s+=`<polyline points="${pts}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round"/>`;
+  s+=`<text x="${L}" y="${H-6}">${D(rows[0].w)}</text>`;
+  if(mi>0&&mi<rows.length-4) s+=`<text x="${x(mi)}" y="${H-6}" text-anchor="middle">Meta</text>`;
+  s+=`<text x="${W-R}" y="${H-6}" text-anchor="end">${D(rows[rows.length-1].hi)}</text></svg>`;
+  return s+`<div class="help" style="margin:6px 0 0">Azul: saldo semana a semana · Verde: meta ${M(goal)}</div>`;
+}
+
+const LBL={ing:'Ingresos',fij:'Fijos',deu:'Deudas',ext:'Extras'};
+function renderSemanas(){
+  const h=hoy(), pres=num(S.presupuestoSemanal);
+  const p=proj(maxD(S.horizonte,S.meta.fecha));
+  let html='';
+  // semanas registradas antes del saldo base (historial)
+  const base=weekStart(S.saldo.fecha);
+  const hist=Object.keys(S.semanas).filter(w=>w<base&&S.semanas[w]!==''&&S.semanas[w]!=null).sort().reverse();
+  for(const r of p.rows){
+    const cur=h>=r.w&&h<=r.we, past=r.we<h, isMeta=S.meta.fecha>=r.w&&S.meta.fecha<=r.we;
+    const lines=['ing','fij','deu','ext'].filter(t=>r[t]).map(t=>`<div><span>${LBL[t]}: ${r.ev.filter(e=>e.t===t).map(e=>esc(e.c)).join(', ')}</span><span class="${r[t]>0?'pos':'neg'}">${M(r[t])}</span></div>`).join('');
+    const parcial=r.dias<7?` <span class="mut">(${r.dias} días)</span>`:'';
+    html+=`<div class="card wk ${cur?'cur':''} ${past&&!cur?'past':''}" ${cur?'id="wk-cur"':''}>
+      <div class="top"><b>${D(r.w)} – ${D(r.we)}${cur?'<span class="tag">Esta semana</span>':''}${isMeta?'<span class="tag" style="background:var(--ok)">Meta</span>':''}</b><span class="mut">Saldo ${M(r.bal)}</span></div>
+      <div class="lines">${lines}<div><span>Gasto semanal${parcial}${r.hasReal?' ✓':''}</span><span class="neg">${M(-r.gasto)}</span></div>
+      <div><b>Ahorro de la semana</b><b class="${r.neto>=0?'pos':'neg'}">${M(r.neto)}</b></div></div>
+      <div class="inp"><label>Gasté de verdad</label><input type="number" inputmode="decimal" step="any" placeholder="${pres}" value="${esc(S.semanas[r.w]??'')}" data-w="${r.w}"></div>
+    </div>`;
+  }
+  if(hist.length){
+    html+=`<h2>Historial (antes del saldo base)</h2><div class="card">`+hist.map(w=>{const v=num(S.semanas[w]);return `<div class="row"><span>${D(w)} – ${D(addDays(w,6))}</span><span>${M(v)} <span class="${pres-v>=0?'pos':'neg'}">(${pres-v>=0?'+':''}${M(pres-v)})</span> <button class="x" data-delw="${w}">✕</button></span></div>`}).join('')+`</div>`;
+  }
+  $('weeks').innerHTML=html||'<div class="card mut">Configura tu saldo actual en Más → Ajustes.</div>';
+}
+
+/* editores de listas */
+const EDS={
+  fijos:{f:[['nombre','Concepto','text','full'],['monto','Monto','num'],['freq','Frecuencia','freq'],['proxima','Próximo pago','date','full']],
+    blank:()=>({id:uid(),nombre:'',monto:'',proxima:hoy(),freq:'m1'}),add:'+ Agregar gasto fijo'},
+  plazos:{f:[['nombre','Deuda','text','full'],['pago','Pago por periodo','num'],['pagos','Pagos restantes','num'],['freq','Frecuencia','freq'],['proxima','Próximo pago','date']],
+    blank:()=>({id:uid(),nombre:'',pago:'',pagos:'',proxima:hoy(),freq:'m1'}),add:'+ Agregar deuda a plazos'},
+  fijas:{f:[['nombre','Deuda','text','full'],['monto','Monto','num'],['fecha','Fecha de pago','date'],['pagada','Ya la pagué','chk','full']],
+    blank:()=>({id:uid(),nombre:'',monto:'',fecha:'',pagada:false}),add:'+ Agregar deuda fija'},
+  extras:{f:[['concepto','Concepto','text','full'],['tipo','Tipo','tipo'],['monto','Monto','num'],['fecha','Fecha','date','full']],
+    blank:()=>({id:uid(),concepto:'',tipo:'ingreso',monto:'',fecha:hoy()}),add:'+ Agregar extra'}
+};
+function inp(t,v,a){
+  if(t==='num') return `<input type="number" inputmode="decimal" step="any" value="${esc(v)}" ${a}>`;
+  if(t==='date') return `<input type="date" value="${esc(v||'')}" ${a}>`;
+  if(t==='chk') return `<input type="checkbox" ${v?'checked':''} ${a}>`;
+  if(t==='freq') return `<select ${a}>${Object.entries(FREQ).map(([c,f])=>`<option value="${c}"${c===v?' selected':''}>${f[2]}</option>`).join('')}</select>`;
+  if(t==='tipo') return `<select ${a}><option value="ingreso"${v!=='gasto'?' selected':''}>Ingreso</option><option value="gasto"${v==='gasto'?' selected':''}>Gasto</option></select>`;
+  if(t==='dow') return `<select ${a}>${DIAS.map((d,i)=>`<option value="${i}"${i==v?' selected':''}>${d}</option>`).join('')}</select>`;
+  return `<input type="text" value="${esc(v)}" ${a}>`;
+}
+function renderEd(k){
+  const E=EDS[k];
+  $('ed-'+k).innerHTML=S[k].map((x,i)=>`<div class="card grid2">`+E.f.map(([n,l,t,c])=>
+    t==='chk'?`<label class="${c||''}" style="display:flex;align-items:center;gap:8px;font-size:15px;color:var(--fg)">${inp(t,x[n],`data-k="${k}" data-i="${i}" data-n="${n}"`)} ${l}</label>`
+    :`<div class="${c||''}"><label>${l}</label>${inp(t,x[n],`data-k="${k}" data-i="${i}" data-n="${n}"`)}</div>`).join('')+
+    `<div class="full" style="text-align:right"><button class="x" data-del="${k}" data-i="${i}">Eliminar</button></div></div>`).join('')+
+    `<button class="b" data-add="${k}">${E.add}</button>`;
+}
+function renderDeuTot(){
+  const h=hoy(); let pl=0,fi=0;
+  S.plazos.forEach(x=>{if(num(x.pago)&&num(x.pagos)>0) pl+=occ(x.proxima,x.freq,Math.floor(num(x.pagos)),h,'9999-12-31').length*num(x.pago)});
+  S.fijas.forEach(x=>{if(!x.pagada&&num(x.monto)&&(!isDate(x.fecha)||x.fecha>h)) fi+=num(x.monto)});
+  $('deu-tot').innerHTML=`<div class="row"><span>A plazos pendiente</span><b>${M(pl)}</b></div><div class="row"><span>Fijas pendientes</span><b>${M(fi)}</b></div><div class="row"><span>Total</span><b class="${pl+fi?'neg':''}">${M(pl+fi)}</b></div>`;
+}
+const AJ=[
+  ['saldo.monto','Dinero con el que cuento','num'],['saldo.fecha','Al cierre del día','date'],
+  ['ingreso.monto','Sueldo por pago','num'],['ingreso.freq','Frecuencia','freq'],
+  ['ingreso.proxima','Próxima fecha de pago','date','full'],
+  ['presupuestoSemanal','Presupuesto semanal','num'],['inicioSemana','Semana inicia en','dow'],
+  ['meta.monto','Meta de ahorro','num'],['meta.fecha','Fecha meta','date'],
+  ['horizonte','Proyectar hasta','date','full']
+];
+const getP=p=>p.split('.').reduce((o,k)=>o?.[k],S);
+function setP(p,v){const ks=p.split('.');let o=S;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=v}
+function renderAjustes(){
+  $('ajustes').innerHTML=AJ.map(([p,l,t,c])=>`<div class="${c||''}"><label>${l}</label>${inp(t,getP(p),`data-p="${p}" data-t="${t}"`)}</div>`).join('')+
+  `<p class="help full" style="margin:4px 0 0">Cuando revises tu banco, actualiza “Dinero con el que cuento” y la fecha: la proyección se recalcula desde ahí (las semanas anteriores ya quedan reflejadas en ese saldo).</p>`;
+}
+
+function calc(){
+  const ae=document.activeElement, w=ae&&ae.dataset&&ae.dataset.w;
+  renderResumen(); renderSemanas(); renderDeuTot();
+  if(w){const n=document.querySelector(`#weeks input[data-w="${w}"]`); if(n) n.focus({preventScroll:true})}
+}
+function renderAll(){Object.keys(EDS).forEach(renderEd); renderAjustes(); calc()}
+
+/* ---------- eventos ---------- */
+document.addEventListener('change',e=>{
+  const t=e.target, d=t.dataset;
+  if(d.k){const f=EDS[d.k].f.find(f=>f[0]===d.n); S[d.k][+d.i][d.n]=t.type==='checkbox'?t.checked:f[2]==='num'?(t.value===''?'':num(t.value)):t.value}
+  else if(d.p){
+    if((d.t==='date')&&!isDate(t.value)){t.value=getP(d.p);return}
+    setP(d.p,d.t==='num'||d.t==='dow'?num(t.value):t.value);
+  }
+  else if(d.w){if(t.value==='') delete S.semanas[d.w]; else S.semanas[d.w]=num(t.value)}
+  else return;
+  save(); setTimeout(calc,0);
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; const d=b.dataset;
+  if(d.tab){setTab(d.tab)}
+  else if(d.sub){document.querySelectorAll('[data-sub]').forEach(x=>x.classList.toggle('on',x===b));['aj','ex','bk'].forEach(s=>$('s-'+s).hidden=s!==d.sub)}
+  else if(d.add){S[d.add].push(EDS[d.add].blank()); save(); renderEd(d.add); calc();
+    const cards=$('ed-'+d.add).querySelectorAll('.card'); const last=cards[cards.length-1]; if(last){last.scrollIntoView({block:'center'}); last.querySelector('input')?.focus()}}
+  else if(d.del){if(confirm('¿Eliminar este registro?')){S[d.del].splice(+d.i,1); save(); renderEd(d.del); calc()}}
+  else if(d.delw){if(confirm('¿Borrar el gasto registrado de esa semana?')){delete S.semanas[d.delw]; save(); calc()}}
+});
+const TITLES={res:'Resumen',sem:'Semanas',fij:'Gastos fijos',deu:'Deudas',mas:'Más'};
+function setTab(t){
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $('hdr').textContent=TITLES[t]||'Finanzas'; window.scrollTo(0,0);
+  if(t==='sem'){const c=$('wk-cur'); if(c) c.scrollIntoView({block:'start'}); window.scrollBy(0,-56)}
+  try{localStorage.setItem(KEY+'_tab',t)}catch(e){}
+}
+function download(name,text,type){
+  const blob=new Blob([text],{type}), url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+$('btn-exp').onclick=()=>download(`finanzas-respaldo-${hoy()}.json`,JSON.stringify(S,null,1),'application/json');
+$('btn-imp').onclick=()=>$('file-imp').click();
+$('file-imp').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=()=>{try{const o=JSON.parse(r.result); if(!o||typeof o!=='object'||!o.saldo) throw 0;
+    if(!confirm('Esto reemplaza todos tus datos actuales. ¿Continuar?')) return;
+    S=merge(o); save(); renderAll(); alert('Respaldo importado.')}catch(err){alert('Archivo no válido.')}
+    e.target.value=''};
+  r.readAsText(f);
+};
+$('btn-csv').onclick=()=>{
+  const p=proj(maxD(S.horizonte,S.meta.fecha));
+  const lines=['semana_inicio,semana_fin,dias,ingresos,gasto_semanal,gasto_real_registrado,fijos,deudas,extras,ahorro_semana,saldo_fin'];
+  p.rows.forEach(r=>lines.push([r.w,r.we,r.dias,r.ing,-r.gasto,r.hasReal?'si':'no',r.fij,r.deu,r.ext,r.neto,r.bal].map(v=>typeof v==='number'?v.toFixed(2):v).join(',')));
+  download(`finanzas-proyeccion-${hoy()}.csv`,lines.join('\n'),'text/csv');
+};
+$('btn-rst').onclick=()=>{if(confirm('Se borrarán TODOS tus datos de este teléfono. ¿Seguro?')&&confirm('Última confirmación: no se puede deshacer.')){S=def(); save(); renderAll(); setTab('res')}};
+
+renderAll();
+let t0='res'; try{t0=localStorage.getItem(KEY+'_tab')||'res'}catch(e){}
+setTab(TITLES[t0]?t0:'res');
+// recalcular si la app vuelve a primer plano en otro día
+let lastDay=hoy(); document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hoy()!==lastDay){lastDay=hoy();calc()}});
+</script>
+</body>
+</html>
